@@ -3,20 +3,27 @@
 const $=id=>document.getElementById(id),D=window.Dungeon;
 let prefs={auto:true,interval:2000,speech:true,reduced:matchMedia("(prefers-reduced-motion: reduce)").matches};
 try{const saved=JSON.parse(localStorage.getItem("dungeon-prefs"));if(saved){prefs.auto=saved.auto!==false;prefs.interval=[1000,1500,2000,3000,4000].includes(saved.interval)?saved.interval:2000;prefs.speech=saved.speech!==false;prefs.reduced=!!saved.reduced;}}catch{}
-let s=D.create(),screen="start",items=[],index=-1,timer=null,held=new Set(),scanEpoch=0;
+let s=D.create(),begun=false,screen="start",items=[],index=-1,timer=null,held=new Set(),scanEpoch=0;
 function save(){try{localStorage.setItem("dungeon-prefs",JSON.stringify(prefs));}catch{}}
 function stop(){clearTimeout(timer);timer=null;scanEpoch++;if(window.speechSynthesis)speechSynthesis.cancel();}
 function speak(text,done){if(!prefs.speech||!window.speechSynthesis||!window.SpeechSynthesisUtterance){if(done)done();return;}const epoch=scanEpoch;const u=new SpeechSynthesisUtterance(text);u.rate=1;let called=false;const finish=()=>{if(called)return;called=true;if(epoch===scanEpoch&&done)done();};u.onend=finish;u.onerror=finish;speechSynthesis.speak(u);}
 function schedule(){clearTimeout(timer);if(prefs.auto&&!held.has("Space"))timer=setTimeout(advance,prefs.interval);}
-function highlight(){[...$("choices").children].forEach((b,i)=>b.classList.toggle("scan",i===index));$("scanstate").textContent=(prefs.auto?"Auto scan":"Manual scan")+(index<0?" · Ready":" · "+(index+1)+" of "+items.length);$("controlmode").textContent=prefs.auto?"ONE SWITCH · AUTO SCAN":"TWO SWITCHES · MANUAL SCAN";}
+function highlight(){[...$("choices").children].forEach((b,i)=>b.classList.toggle("scan",i===index));$("scanstate").textContent=(prefs.auto?"Auto scan":"Manual scan")+(index<0?" · Ready":" · "+(index+1)+" of "+items.length);$("controlmode").textContent=prefs.auto?"ONE SWITCH · AUTO SCAN":"TWO SWITCHES · MANUAL SCAN";$("controlHint").textContent=prefs.auto?"Space · select highlighted choice":"Space · advance   |   Enter · select";}
 function advance(){if(!items.length)return;stop();index=(index+1)%items.length;highlight();speak(items[index].label,schedule);}
 function setItems(list,announcement=""){stop();items=list;index=-1;$("choices").replaceChildren(...list.map(a=>{const b=document.createElement("button");b.type="button";b.textContent=a.label;b.addEventListener("click",()=>choose(a));return b;}));highlight();if(announcement)speak(announcement,schedule);else schedule();}
 function choose(a){if(!a)return;stop();a.run();}
 function status(){$("hp").textContent=s.player.hp+" / "+s.player.max;$("healthbar").style.width=100*s.player.hp/s.player.max+"%";$("gold").textContent=s.player.gold;$("potions").textContent=s.player.potions;$("turn").textContent=s.turn;$("journal").textContent=s.message;$("seed").textContent="Seed "+s.seed;$("location").textContent=s.player.x<5?"Entrance hall":s.player.x<10?"The ossuary":"Stairway chamber";$("intent").textContent=s.enemies.filter(e=>e.hp>0&&e.intent==="strike").map(e=>"Skeleton "+e.id.slice(1)+" preparing a strike").join(" · ");$("hint").textContent=prefs.auto?"Space selects on release.":"Space advances · Enter selects."; }
 function action(label,run){return {label,run};}
-function play(announcement=""){screen="play";status();$("prompt").textContent=s.outcome?"Journey complete":"Your move";const list=D.actions(s).map(a=>action(a.label,()=>{s=D.step(s,a.id);play(s.message+(s.outcome?"":" "+$("intent").textContent));}));if(s.outcome)list.push(action("New expedition",()=>confirmNew()));list.push(action("Look around",()=>play(D.describe(s))),action("Settings",()=>settings()),action("Main menu",()=>start()));setItems(list,announcement);}
-function confirmNew(){$("prompt").textContent="Begin a new expedition?";setItems([action("Cancel",()=>s.outcome?play():start()),action("Start new expedition",()=>{s=D.create();play(s.message);})],"Start again? Current expedition will be lost.");}
-function start(){screen="start";status();$("prompt").textContent="Enter the crypt";setItems([action(s.turn?"Continue expedition":"Begin expedition",()=>play(s.message)),action("Controls: "+(prefs.auto?"One switch":"Two switches"),()=>controlMenu(start)),action("How to play",()=>instructions()),action("Settings",()=>settings()),...(s.turn?[action("New expedition",confirmNew)]:[])],"Dungeon Quest. Nothing moves until you choose.");}
+function scene(kind){
+ $("game").hidden=kind==="title";$("titleScene").hidden=kind!=="title";
+}
+const PROLOGUE="For a hundred years, the doors of the Forgotten Crypt remained sealed. Tonight, a bell rings beneath the earth. You descend alone, armed with a sword and two healing draughts. Find the stairs beyond the dead, and discover what lies below.";
+const INSTRUCTIONS="Choose a direction to move. Attack adjacent skeletons, guard against strikes and open treasure. Reach the stairs. Look around describes the dungeon without spending a turn. Space selects the highlighted choice in one-switch mode. In two-switch mode, Space advances and Enter selects.";
+function titleCopy(kicker,heading,body){$("titleKicker").textContent=kicker;$("titleHeading").textContent=heading;$("titleText").textContent=body;}
+function prologue(){screen="intro";scene("title");titleCopy("CHAPTER I · THE FORGOTTEN CRYPT","The bell beneath the earth",PROLOGUE);$("prompt").textContent="Prologue";setItems([action("Enter the crypt",()=>play(s.message)),action("Repeat narration",prologue),action("Back to main menu",start)],PROLOGUE);}
+function play(announcement=""){begun=true;screen="play";scene("game");status();$("prompt").textContent=s.outcome?"Journey complete":"Your move";const list=D.actions(s).map(a=>action(a.label,()=>{s=D.step(s,a.id);play(s.message+(s.outcome?"":" "+$("intent").textContent));}));if(s.outcome)list.push(action("New expedition",()=>confirmNew()));list.push(action("Look around",()=>play(D.describe(s))),action("Settings",()=>settings()),action("Main menu",()=>start()));setItems(list,announcement);}
+function confirmNew(){const back=screen==="play"?play:start;$("prompt").textContent="Begin a new expedition?";setItems([action("Cancel",()=>back()),action("Start new expedition",()=>{s=D.create();begun=false;prologue();})],"Start again? Current expedition will be lost.");}
+function start(){screen="start";scene("title");status();titleCopy("A TURN-BASED FANTASY ADVENTURE","Dungeon Quest","Beyond the sealed gate, forgotten things awaken. Descend into the dark, find your fortune, and survive.");$("prompt").textContent="Main menu";setItems([action(begun?"Continue expedition":"Begin expedition",()=>begun?play(s.message):prologue()),action("Controls: "+(prefs.auto?"One switch":"Two switches"),()=>controlMenu(start)),action("How to play",instructions),action("Settings",settings),...(begun?[action("New expedition",confirmNew)]:[])],"Dungeon Quest. Main menu. Nothing moves until you choose.");}
 function controlMenu(back){
  $("prompt").textContent="Choose switch controls";
  setItems([
@@ -29,12 +36,12 @@ function controlMenu(back){
   action("Back",back)
  ],"One switch scans automatically. Two switches let you advance and select at your own pace.");
 }
-function instructions(){$("prompt").textContent="How to play";setItems([action("Repeat instructions",instructions),action("Back",start)],"Space selects the highlighted choice on release. In two switch mode, Space advances and Enter selects. Choose a direction to move. Attack adjacent skeletons, guard against strikes and open treasure. Reach the stairs. Look around describes the dungeon without spending a turn.");}
+function instructions(){scene("title");titleCopy("THE ADVENTURER'S GUIDE","How to play",INSTRUCTIONS);$("prompt").textContent="How to play";setItems([action("Repeat instructions",instructions),action("Back",start)],INSTRUCTIONS);}
 let returnScreen="start";
 function settings(){if(screen!=="settings")returnScreen=screen;screen="settings";$("prompt").textContent="Settings";setItems([action("Controls: "+(prefs.auto?"One switch":"Two switches"),()=>controlMenu(settings)),action("Scan speed: "+prefs.interval/1000+" seconds",()=>{const speeds=[1000,1500,2000,3000,4000];prefs.interval=speeds[(speeds.indexOf(prefs.interval)+1)%speeds.length];save();settings();}),action("Speech: "+(prefs.speech?"On":"Off"),()=>{prefs.speech=!prefs.speech;save();settings();}),action("Reduced motion: "+(prefs.reduced?"On":"Off"),()=>{prefs.reduced=!prefs.reduced;save();settings();}),action("Back",()=>returnScreen==="play"?play():start())]);}
 document.addEventListener("keydown",e=>{if(!["Space","Enter"].includes(e.code)||e.target.matches("input,textarea,select"))return;e.preventDefault();if(!e.repeat){held.add(e.code);if(prefs.auto&&e.code==="Space"){clearTimeout(timer);timer=null;}}});
 document.addEventListener("keyup",e=>{if(!held.delete(e.code))return;e.preventDefault();if(prefs.auto){if(e.code==="Space"){if(index<0)advance();else choose(items[index]);}}else if(e.code==="Space")advance();else if(index>=0)choose(items[index]);});
 window.addEventListener("blur",()=>{held.clear();if(prefs.auto)schedule();});
-function frame(t){window.CryptArt.draw($("world"),s,t,prefs.reduced);requestAnimationFrame(frame);}
+function frame(t){if(!$("game").hidden)window.CryptArt.draw($("world"),s,t,prefs.reduced);requestAnimationFrame(frame);}
 start();requestAnimationFrame(frame);
 })();
