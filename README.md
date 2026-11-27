@@ -2,7 +2,7 @@
 An atmospheric, single-switch dungeon roguelike. Every action is a tactical choice; enemies never move while you are scanning.
 
 ## Play the first vertical slice
-Serve the repository root over HTTP (for example, python -m http.server) and open index.html. Space selects the highlighted choice on release. Enter selects in two-switch mode; Space advances. Mouse and touch also work. Settings include scan speed, speech and reduced motion. No reaction-time challenge.
+Serve the repository root over HTTP (for example, python -m http.server) and open index.html. Choose Controls on the main menu or in Settings. In one-switch mode, Space selects the automatically highlighted choice on release. In two-switch mode, Space advances the highlight and Enter selects it, both on release; automatic scanning is disabled. Switching to two switches requires confirmation. The chosen mode is saved locally. Mouse and touch also work. Settings include scan speed, speech and reduced motion. No reaction-time challenge.
 
 The Forgotten Crypt prototype has seeded connected rooms, treasure, skeletons with declared intentions, movement, attack, guard, healing and a staircase goal. Inspect surroundings without taking a turn.
 
@@ -14,6 +14,6 @@ The Forgotten Crypt prototype has seeded connected rooms, treasure, skeletons wi
 The renderer is dependency-free for this initial slice. The interface is not yet integrated into NARBE's shared platform. Artwork is an original procedural first pass, not a completed sprite pack.
 
 ## Development
-Run node --test tests/engine.test.js. A single quick CI job checks syntax and engine tests. GitHub Pages can serve the root without a build step once configured.
+Run node --test tests/*.test.js. A single quick CI job checks syntax and engine tests. GitHub Pages can serve the root without a build step once configured.
 
 See DESIGN.md for scope and quality gates.
