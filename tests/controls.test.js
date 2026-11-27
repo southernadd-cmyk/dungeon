@@ -7,7 +7,7 @@ test("two-switch mode requires confirmation, then Space advances and Enter selec
  assert.equal(h.M.getSettings().autoScan,false);assert.match(h.el("controlmode").textContent,/TWO SWITCHES/);assert.match(h.active(),/^Controls:/);
  h.tick(6000);assert.match(h.active(),/^Controls:/);
  // Back from the mode chooser restores the parent identity. Reach the root blank and then Begin.
- h.press("Space");h.press("Space");h.press("Space");assert.equal(h.active(),undefined);
+ h.press("Space");h.press("Space");h.press("Space");h.press("Space");assert.equal(h.active(),undefined);
  h.press("Enter");assert.equal(h.el("prompt").textContent,"Main menu");
  h.press("Space");assert.equal(h.active(),"Begin expedition");h.tick(6000);assert.equal(h.active(),"Begin expedition");
  h.press("Enter");assert.equal(h.el("prompt").textContent,"Prologue");assert.equal(h.el("turn").textContent,0);assert.equal(h.el("game").hidden,true);
@@ -29,7 +29,7 @@ test("auto scan freezes the choice while Enter is held, selects only on release;
  h.tick(6000);assert.equal(h.active(),"Begin expedition");assert.equal(h.el("prompt").textContent,"Main menu");
  h.press("Space");h.tick(2000);assert.match(h.active(),/^Controls:/);
  // Wrap through the other choices and the required blank, then back to Begin.
- h.tick(8000);assert.equal(h.active(),"Begin expedition");
+ h.tick(10000);assert.equal(h.active(),"Begin expedition");
  h.event("keydown","Enter");h.event("keydown","Enter",true);h.tick(6000);
  assert.equal(h.active(),"Begin expedition");assert.equal(h.el("prompt").textContent,"Main menu");
  h.event("keyup","Enter");assert.equal(h.el("prompt").textContent,"Prologue");assert.equal(h.el("turn").textContent,0);
@@ -39,5 +39,5 @@ test("title and narrated prologue are separate from gameplay, repeatable and ski
  h.click("Begin expedition");assert.equal(h.el("prompt").textContent,"Prologue");assert.match(h.el("titleText").textContent,/bell rings/);
  h.click("Repeat narration");assert.equal(h.el("turn").textContent,0);h.click("Back to main menu");assert.equal(h.el("prompt").textContent,"Main menu");
  h.click("Begin expedition");h.click("Enter the crypt");assert.equal(h.el("game").hidden,false);assert.equal(h.el("titleScene").hidden,true);
- h.click("Main menu");assert.equal(h.el("game").hidden,true);h.click("Continue expedition");assert.equal(h.el("prompt").textContent,"Your move");assert.equal(h.el("turn").textContent,0);
+ h.click("Pause");h.click("Main menu");assert.equal(h.el("game").hidden,true);h.click("Continue expedition");assert.equal(h.el("prompt").textContent,"Your move");assert.equal(h.el("turn").textContent,0);
 });

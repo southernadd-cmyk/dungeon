@@ -2,8 +2,10 @@
 "use strict";
 const $=id=>document.getElementById(id),D=window.Dungeon;
 const M=window.NarbeScanManager,V=window.NarbeVoiceManager;
-let prefs={reduced:matchMedia("(prefers-reduced-motion: reduce)").matches};
-try{const saved=JSON.parse(localStorage.getItem("dungeon-prefs"));if(saved&&typeof saved.reduced==="boolean")prefs.reduced=saved.reduced;}catch{}
+const A=window.SafeAudio;
+let prefs={reduced:matchMedia("(prefers-reduced-motion: reduce)").matches,sound:true};
+try{const saved=JSON.parse(localStorage.getItem("dungeon-prefs"));if(saved&&typeof saved.reduced==="boolean")prefs.reduced=saved.reduced;if(saved&&typeof saved.sound==="boolean")prefs.sound=saved.sound;}catch{}
+A?.setEnabled(prefs.sound);
 let s=D.create(),begun=false,screen="start",items=[],input;
 const HOLD_THRESHOLD=600; // optional backwards scan; never a minimum activation duration
 function save(){try{localStorage.setItem("dungeon-prefs",JSON.stringify(prefs));}catch{}}
@@ -26,19 +28,53 @@ function setItems(list,announcement="",{fresh=true,restoreId=null}={}){
  if(fresh)scan.open(items,{restoreId});else scan.setItems(items);
  if(announcement)scan.announceCurrent(announcement);
 }
-function choose(a){if(a)a.run();}
+function sound(name){try{A?.play(name,.45);}catch{}}
+function choose(a){if(a){sound("select");a.run();}}
 function status(){$("hp").textContent=s.player.hp+" / "+s.player.max;$("healthbar").style.width=100*s.player.hp/s.player.max+"%";$("gold").textContent=s.player.gold;$("potions").textContent=s.player.potions;$("turn").textContent=s.turn;$("journal").textContent=s.message;$("seed").textContent="Seed "+s.seed;$("location").textContent=s.player.x<5?"Entrance hall":s.player.x<10?"The ossuary":"Stairway chamber";$("floorName").textContent=D.FLOORS[s.depth-1];$("chapterNumber").textContent="FLOOR "+s.depth+" / 3";$("chapterName").textContent=D.FLOORS[s.depth-1];$("attack").textContent=s.player.attack;$("kills").textContent=s.player.kills;$("objective").textContent=s.phase==="upgrade"?"Choose a blessing":D.sealed(s)?"Defeat the Bellkeeper":s.depth===3?"Claim the Bell of Dawn":"Find the stairs";$("intent").textContent=s.phase==="explore"&&!s.outcome?D.threats(s):""; }
 function action(label,run,id=label){return {id,label,run};}
 function scene(kind){
  $("game").hidden=kind==="title";$("titleScene").hidden=kind!=="title";
 }
 const PROLOGUE="For a hundred years, the doors of the Forgotten Crypt remained sealed. Tonight, a bell rings beneath the earth. You descend alone, armed with a sword and two healing draughts. Three floors lie between you and the stolen Bell of Dawn. Find the stairs, choose your blessings and defeat the Bellkeeper.";
-const INSTRUCTIONS="Use Travel toward treasure or stairs to walk several safe steps at once. Travel stops when an enemy is near or a point of interest is reached. You can always move one step at a time. Attack adjacent enemies, guard and counter when a strike is announced, and open treasure. Choose a blessing at the end of each of the first two floors. Defeat the Bellkeeper on floor three and claim the Bell of Dawn. Look around describes the dungeon without spending a turn. Enter selects the highlighted choice in one-switch mode. In two-switch mode, Space advances and Enter selects. Both act on release.";
+const INSTRUCTIONS="Use Travel toward treasure or stairs to walk several safe steps at once. Travel stops when an enemy is near or a point of interest is reached. You can always move one step at a time. Attack adjacent enemies, guard and counter when a strike is announced, and open treasure. Choose a blessing at the end of each of the first two floors. Defeat the Bellkeeper on floor three and claim the Bell of Dawn. Look around describes the dungeon without spending a turn. Enter selects the highlighted choice in one-switch mode. In two-switch mode, Space advances and Enter selects. Both act on release. Choose Pause to access settings, restart or exit without spending a turn.";
 function titleCopy(kicker,heading,body){$("titleKicker").textContent=kicker;$("titleHeading").textContent=heading;$("titleText").textContent=body;}
 function prologue(){screen="intro";scene("title");titleCopy("CHAPTER I · THE FORGOTTEN CRYPT","The bell beneath the earth",PROLOGUE);$("prompt").textContent="Prologue";setItems([action("Enter the crypt",()=>play(s.message)),action("Repeat narration",prologue),action("Back to main menu",start)],PROLOGUE);}
-function play(announcement=""){begun=true;screen="play";scene("game");status();$("prompt").textContent=s.outcome?"Journey complete":s.phase==="upgrade"?"Choose your blessing":"Your move";const list=D.actions(s).map(a=>action(a.label,()=>{s=D.step(s,a.id);play(s.message+(s.outcome||s.phase!=="explore"?"":" "+D.threats(s)));},a.id));if(s.outcome)list.push(action("New expedition",()=>confirmNew()));list.push(action("Look around",()=>play(D.describe(s))),action("Settings",()=>settings()),action("Main menu",()=>start()));setItems(list,announcement);}
-function confirmNew(){const back=screen==="play"?play:start;$("prompt").textContent="Begin a new expedition?";setItems([action("Cancel",()=>back()),action("Start new expedition",()=>{s=D.create();begun=false;prologue();})],"Start again? Current expedition will be lost.");}
-function start(restoreId=null){screen="start";scene("title");status();titleCopy("A TURN-BASED FANTASY ADVENTURE","Dungeon Quest","Beyond the sealed gate, forgotten things awaken. Descend into the dark, find your fortune, and survive.");$("prompt").textContent="Main menu";setItems([action(begun?"Continue expedition":"Begin expedition",()=>begun?play(s.message):prologue()),action("Controls: "+(mode()?"One switch":"Two switches"),()=>controlMenu(()=>start("controls")),"controls"),action("How to play",instructions),action("Settings",()=>settings(),"settings"),...(begun?[action("New expedition",confirmNew)]:[])],"Dungeon Quest. Main menu. Nothing moves until you choose.",{restoreId});}
+function play(announcement="",restoreId=null){begun=true;screen="play";scene("game");status();$("prompt").textContent=s.outcome?"Journey complete":s.phase==="upgrade"?"Choose your blessing":"Your move";const list=D.actions(s).map(a=>action(a.label,()=>{s=D.step(s,a.id);if(s.outcome)sound(s.outcome==="won"?"win":"lose");play(s.message+(s.outcome||s.phase!=="explore"?"":" "+D.threats(s)));},a.id));if(s.outcome)list.push(action("New expedition",()=>confirmNew()));list.push(action("Look around",()=>play(D.describe(s),"inspect"),"inspect"),action("Pause",()=>pause(),"pause"));setItems(list,announcement,{restoreId});}
+function confirmNew(back=()=>screen==="play"?play():start()){
+ $("prompt").textContent="Begin a new expedition?";
+ setItems([action("Cancel",()=>back()),action("Start new expedition",()=>{s=D.create();begun=false;prologue();})],"Start again? Current expedition will be lost.");
+}
+function pause(restoreId=null,announcement="Paused. Your expedition is unchanged."){
+ screen="pause";scene("game");status();$("prompt").textContent="Pause menu";
+ setItems([
+ action("Continue",()=>play("Expedition resumed.","pause"),"continue"),
+ action("Restart",()=>confirmNew(()=>pause("restart")),"restart"),
+ action("Settings",()=>settings(),"settings"),
+ action("Main menu",()=>start(),"main"),
+ action("Exit game",()=>confirmExit(()=>pause("exit")),"exit"),
+ action("Help",()=>pause("help",INSTRUCTIONS),"help")
+ ],announcement,{restoreId});
+}
+function confirmExit(back){
+ $("prompt").textContent="Exit game?";
+ const embedded=window.parent!==window;
+ const warning=embedded?"Return to the Hub? Your current expedition will not be saved if the game closes.":"Exit to the main menu? Dungeon Quest is running on its own. Your current expedition can be continued here until you close or reload the page.";
+ setItems([action("Cancel",back),action(embedded?"Return to Hub":"Return to main menu",()=>{
+  // A host that does not handle the message must never leave the player stranded.
+  start(null,embedded?"Returning to the Hub.":"Returned to the main menu.");
+  if(embedded){
+   input.cancel({resetGuard:true});V.cancel();try{A?.stopAll();}catch{}
+   window.parent.postMessage({action:"focusBackButton"},"*");
+  }
+ })],warning);
+}
+function resetProgress(){
+ $("prompt").textContent="Reset progress?";
+ setItems([action("Cancel",()=>settings({restoreId:"reset"})),action("Reset expedition",()=>{
+  s=D.create();begun=false;start(null,"Expedition reset. Your accessibility settings are unchanged.");
+ })],"Reset the expedition? All current progress will be lost. Your accessibility settings will be kept.");
+}
+function start(restoreId=null,announcement="Dungeon Quest. Main menu. Nothing moves until you choose."){screen="start";scene("title");status();titleCopy("A TURN-BASED FANTASY ADVENTURE","Dungeon Quest","Beyond the sealed gate, forgotten things awaken. Descend into the dark, find your fortune, and survive.");$("prompt").textContent="Main menu";setItems([action(begun?"Continue expedition":"Begin expedition",()=>begun?play(s.message):prologue()),action("Controls: "+(mode()?"One switch":"Two switches"),()=>controlMenu(()=>start("controls")),"controls"),action("How to play",instructions),action("Settings",()=>settings(),"settings"),...(begun?[action("New expedition",()=>confirmNew(()=>start("New expedition")))]:[]),action("Exit game",()=>confirmExit(()=>start("exit")),"exit")],announcement,{restoreId});}
 function controlMenu(back){
  $("prompt").textContent="Choose switch controls";
  setItems([
@@ -51,7 +87,7 @@ function controlMenu(back){
   action("Back",back)
  ],"One switch scans automatically. Two switches let you advance and select at your own pace.");
 }
-function instructions(){scene("title");titleCopy("THE ADVENTURER'S GUIDE","How to play",INSTRUCTIONS);$("prompt").textContent="How to play";setItems([action("Repeat instructions",instructions),action("Back",start)],INSTRUCTIONS);}
+function instructions(){screen="instructions";scene("title");titleCopy("THE ADVENTURER'S GUIDE","How to play",INSTRUCTIONS);$("prompt").textContent="How to play";setItems([action("Repeat instructions",instructions),action("Back",()=>start("How to play"))],INSTRUCTIONS);}
 let returnScreen="start";
 function settings({fresh=true,restoreId=null,announcement=""}={}){
  if(screen!=="settings")returnScreen=screen;
@@ -63,7 +99,9 @@ function settings({fresh=true,restoreId=null,announcement=""}={}){
  action("Reduced motion: "+(prefs.reduced?"On":"Off"),()=>{prefs.reduced=!prefs.reduced;save();redraw("Reduced motion "+(prefs.reduced?"on":"off"));},"motion"),
  action("Auto scan: "+(mode()?"On — One switch":"Off — Two switches"),()=>controlMenu(()=>settings({restoreId:"auto"})),"auto"),
  action("Scan speed: "+M.getScanInterval()/1000+" seconds",()=>{M.cycleScanSpeed();redraw("Scan speed "+M.getScanInterval()/1000+" seconds");},"speed"),
- action("Back",()=>returnScreen==="play"?play():start("settings"),"back")
+ action("Sound effects: "+(prefs.sound?"On":"Off"),()=>{prefs.sound=!prefs.sound;A?.setEnabled(prefs.sound);save();redraw("Sound effects "+(prefs.sound?"on":"off"));},"sound"),
+ action("Reset progress",resetProgress,"reset"),
+ action("Back",()=>returnScreen==="pause"?pause("settings"):start("settings"),"back")
  ],announcement||(fresh?"Settings":""),{fresh,restoreId});
 }
 M.subscribe(()=>{if(screen==="settings"&&$("prompt").textContent==="Settings")settings({fresh:false});else if(screen==="start"&&$("prompt").textContent==="Main menu")refreshMain();});
@@ -77,7 +115,7 @@ document.addEventListener("keyup",input.up);
 document.addEventListener("narbe-input-cancelled",()=>input.cancel());
 window.addEventListener("blur",()=>input.cancel({resetGuard:true}));
 document.addEventListener("visibilitychange",()=>{if(document.hidden)input.cancel({resetGuard:true});});
-window.addEventListener("pagehide",e=>{input.cancel({resetGuard:true});V.cancel();if(!e.persisted)scan.dispose();});
+window.addEventListener("pagehide",e=>{input.cancel({resetGuard:true});V.cancel();try{A?.stopAll();}catch{}if(!e.persisted)scan.dispose();});
 function frame(t){if(!$("game").hidden)window.CryptArt.draw($("world"),s,t,prefs.reduced);requestAnimationFrame(frame);}
 start();requestAnimationFrame(frame);
 })();
