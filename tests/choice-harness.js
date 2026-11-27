@@ -17,11 +17,12 @@ function harness(initial={}){
  return {context,window,M,V,tick,event,press,document,elem,storage,timers};
 }
 
-function boot(initial={}){
+function boot(initial={},options={}){
  const h=harness({"narbe-voice-settings":JSON.stringify({ttsEnabled:false}),...initial});
+ const audio=[];h.window.SafeAudio={setEnabled:on=>audio.push(["enabled",on]),play:name=>audio.push(["play",name]),stopAll:()=>audio.push(["stopAll"])};const messages=[];if(options.embedded)h.window.parent={postMessage:(data,origin)=>messages.push({data,origin})};
  h.window.Dungeon=require("../engine.js");h.window.DungeonChoiceInput=Input;h.window.CryptArt={draw(){}};
  vm.runInContext(app,h.context);
  const el=id=>h.document.getElementById(id),buttons=()=>el("choices").children;
- return {...h,el,buttons,click(prefix){const button=buttons().find(b=>b.textContent.startsWith(prefix));assert(button,prefix);button.click();},active:()=>buttons().find(b=>b.classList.contains("scan"))?.textContent};
+ return {...h,audio,messages,el,buttons,click(prefix){const button=buttons().find(b=>b.textContent.startsWith(prefix));assert(button,prefix);button.click();},active:()=>buttons().find(b=>b.classList.contains("scan"))?.textContent};
 }
 module.exports={harness,boot};
