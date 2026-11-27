@@ -24,7 +24,7 @@ test("actual application loads with shared managers and supports release-only na
  h.event("keydown","Space");assert.equal(active(),undefined);h.event("keyup","Space");h.tick(60);assert.equal(active(),"Begin expedition");
  h.press("NumpadEnter");assert.equal(d.getElementById("prompt").textContent,"Prologue");
  h.press("Space");h.press("Enter");assert.equal(d.getElementById("prompt").textContent,"Your move");
- buttons().find(b=>b.textContent==="Settings").click();assert.equal(d.getElementById("prompt").textContent,"Settings");
+ buttons().find(b=>b.textContent==="Pause").click();buttons().find(b=>b.textContent==="Settings").click();assert.equal(d.getElementById("prompt").textContent,"Settings");
  for(let i=0;i<5;i++)h.press("Space");assert.match(active(),/Scan speed: 2/);
  h.press("Enter");assert.match(active(),/Scan speed: 3/);assert.equal(h.M.getScanInterval(),3000);
  h.M.setAutoScan(true);assert.match(active(),/Scan speed: 3/);
