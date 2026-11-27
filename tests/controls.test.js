@@ -1,30 +1,43 @@
-const test=require("node:test"),assert=require("node:assert/strict"),vm=require("node:vm"),fs=require("node:fs"),path=require("node:path"),D=require("../engine.js");
-const src=fs.readFileSync(path.join(__dirname,"../app.js"),"utf8");
-function harness(initial){
- let id=0,timers=new Map(),stored=initial?JSON.stringify(initial):null,els={},events={},winEvents={};
- const el=()=>({textContent:"",children:[],style:{},classList:{toggle(k,v){this[k]=v;}},replaceChildren(...c){this.children=c;},addEventListener(k,f){this[k]=f;}});
- const document={getElementById(k){return els[k]||=(el());},createElement:el,addEventListener(k,f){events[k]=f;}};
- const window={Dungeon:D,addEventListener(k,f){winEvents[k]=f;}};
- vm.runInNewContext(src,{window,document,matchMedia:()=>({matches:false}),localStorage:{getItem:()=>stored,setItem(k,v){stored=v;}},setTimeout(f){timers.set(++id,f);return id;},clearTimeout(i){timers.delete(i);},requestAnimationFrame(){}});
- const fire=(type,code,repeat=false)=>events[type]({code,repeat,target:{matches:()=>false},preventDefault(){}});
- const key=code=>{fire("keydown",code);fire("keyup",code);};
- const tick=()=>{for(const [i,f] of [...timers]){timers.delete(i);f();}};
- return {els,timers,key,tick,fire,click(text){const b=els.choices.children.find(c=>c.textContent.startsWith(text));assert(b,text);b.click();},selected(){return els.choices.children.find(c=>c.classList.scan)?.textContent;},saved(){return JSON.parse(stored);}};
-}
-test("two-switch mode requires confirmation, then only advances on Space and selects on Enter",()=>{
- const h=harness();h.click("Controls:");h.click("Two switches");assert.equal(h.els.prompt.textContent,"Confirm two-switch mode");
- h.click("Cancel");h.click("Two switches");h.click("Use two switches");
- assert.equal(h.saved().auto,false);assert.equal(h.timers.size,0);assert.match(h.els.controlmode.textContent,/TWO SWITCHES/);
- h.tick();assert.equal(h.selected(),undefined);h.key("Enter");assert.equal(h.els.prompt.textContent,"Main menu");
- h.key("Space");assert.equal(h.selected(),"Begin expedition");h.tick();assert.equal(h.selected(),"Begin expedition");
- h.key("Enter");assert.equal(h.els.prompt.textContent,"Prologue");assert.equal(h.els.turn.textContent,0);assert.equal(h.els.game.hidden,true);h.key("Space");h.key("Enter");assert.equal(h.els.prompt.textContent,"Your move");assert.equal(h.els.game.hidden,false);
- h.key("Space");assert.equal(h.els.turn.textContent,0);h.key("Enter");assert.equal(h.els.turn.textContent,1);
+const test=require("node:test"),assert=require("node:assert/strict");
+const {boot}=require("./choice-harness.js");
+const initialAuto={"narbe-scan-settings":JSON.stringify({autoScan:true})};
+test("two-switch mode requires confirmation, then Space advances and Enter selects",()=>{
+ const h=boot(initialAuto);h.click("Controls:");h.click("Two switches");assert.equal(h.el("prompt").textContent,"Confirm two-switch mode");
+ h.click("Cancel");assert.equal(h.M.getSettings().autoScan,true);h.click("Two switches");h.click("Use two switches");
+ assert.equal(h.M.getSettings().autoScan,false);assert.match(h.el("controlmode").textContent,/TWO SWITCHES/);assert.match(h.active(),/^Controls:/);
+ h.tick(6000);assert.match(h.active(),/^Controls:/);
+ // Back from the mode chooser restores the parent identity. Reach the root blank and then Begin.
+ h.press("Space");h.press("Space");h.press("Space");assert.equal(h.active(),undefined);
+ h.press("Enter");assert.equal(h.el("prompt").textContent,"Main menu");
+ h.press("Space");assert.equal(h.active(),"Begin expedition");h.tick(6000);assert.equal(h.active(),"Begin expedition");
+ h.press("Enter");assert.equal(h.el("prompt").textContent,"Prologue");assert.equal(h.el("turn").textContent,0);assert.equal(h.el("game").hidden,true);
+ h.press("Space");h.press("Enter");assert.equal(h.el("prompt").textContent,"Your move");assert.equal(h.el("game").hidden,false);
+ // Choose a single movement, not a multi-step travel shortcut.
+ for(let i=0;i<h.buttons().length&&!h.active()?.startsWith("Move ");i++)h.press("Space");
+ assert.match(h.active(),/^Move /);assert.equal(h.el("turn").textContent,0);h.press("Enter");assert.equal(h.el("turn").textContent,1);
 });
-test("saved two-switch mode loads without timers and can return to automatic scanning",()=>{
- const h=harness({auto:false,interval:2000,speech:false,reduced:false});assert.equal(h.timers.size,0);h.click("Controls:");h.click("One switch");assert.equal(h.saved().auto,true);assert.equal(h.timers.size,1);
+test("saved two-switch mode loads without auto advancing and can return to automatic scanning",()=>{
+ const h=boot({"narbe-scan-settings":JSON.stringify({autoScan:false,scanSpeedIndex:1})});
+ h.tick(6000);assert.equal(h.active(),undefined);
+ h.click("Controls:");h.click("One switch");assert.equal(h.M.getSettings().autoScan,true);
+ assert.equal(JSON.parse(h.storage.get("narbe-scan-settings")).autoScan,true);assert.match(h.active(),/^Controls:/);
+ h.tick(2000);assert.equal(h.active(),"How to play");
 });
-test("automatic scan freezes the highlighted choice during a held switch",()=>{
- const h=harness();h.tick();assert.equal(h.selected(),"Begin expedition");h.fire("keydown","Space");h.fire("keydown","Space",true);h.tick();assert.equal(h.selected(),"Begin expedition");h.fire("keyup","Space");assert.equal(h.els.prompt.textContent,"Prologue");assert.equal(h.els.turn.textContent,0);
+test("auto scan freezes the choice while Enter is held, selects only on release; Space brake does not select",()=>{
+ const h=boot(initialAuto);h.tick(2000);assert.equal(h.active(),"Begin expedition");
+ h.event("keydown","Space");h.event("keydown","Space",true);h.tick(100);h.event("keyup","Space");
+ h.tick(6000);assert.equal(h.active(),"Begin expedition");assert.equal(h.el("prompt").textContent,"Main menu");
+ h.press("Space");h.tick(2000);assert.match(h.active(),/^Controls:/);
+ // Wrap through the other choices and the required blank, then back to Begin.
+ h.tick(8000);assert.equal(h.active(),"Begin expedition");
+ h.event("keydown","Enter");h.event("keydown","Enter",true);h.tick(6000);
+ assert.equal(h.active(),"Begin expedition");assert.equal(h.el("prompt").textContent,"Main menu");
+ h.event("keyup","Enter");assert.equal(h.el("prompt").textContent,"Prologue");assert.equal(h.el("turn").textContent,0);
 });
-
-test("title and narrated prologue are separate from gameplay, repeatable and skippable",()=>{const h=harness();assert.equal(h.els.game.hidden,true);assert.equal(h.els.titleScene.hidden,false);assert.equal(h.els.titleHeading.textContent,"Dungeon Quest");h.click("Begin expedition");assert.equal(h.els.prompt.textContent,"Prologue");assert.match(h.els.titleText.textContent,/bell rings/);h.click("Repeat narration");assert.equal(h.els.turn.textContent,0);h.click("Back to main menu");assert.equal(h.els.prompt.textContent,"Main menu");h.click("Begin expedition");h.click("Enter the crypt");assert.equal(h.els.game.hidden,false);assert.equal(h.els.titleScene.hidden,true);h.click("Main menu");assert.equal(h.els.game.hidden,true);h.click("Continue expedition");assert.equal(h.els.prompt.textContent,"Your move");assert.equal(h.els.turn.textContent,0);});
+test("title and narrated prologue are separate from gameplay, repeatable and skippable",()=>{
+ const h=boot();assert.equal(h.el("game").hidden,true);assert.equal(h.el("titleScene").hidden,false);assert.equal(h.el("titleHeading").textContent,"Dungeon Quest");
+ h.click("Begin expedition");assert.equal(h.el("prompt").textContent,"Prologue");assert.match(h.el("titleText").textContent,/bell rings/);
+ h.click("Repeat narration");assert.equal(h.el("turn").textContent,0);h.click("Back to main menu");assert.equal(h.el("prompt").textContent,"Main menu");
+ h.click("Begin expedition");h.click("Enter the crypt");assert.equal(h.el("game").hidden,false);assert.equal(h.el("titleScene").hidden,true);
+ h.click("Main menu");assert.equal(h.el("game").hidden,true);h.click("Continue expedition");assert.equal(h.el("prompt").textContent,"Your move");assert.equal(h.el("turn").textContent,0);
+});
