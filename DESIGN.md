@@ -14,3 +14,6 @@ One crypt biome, warrior, skeleton, treasure and exit. Seeded rooms and corridor
 
 ## Release gates
 A reachable exit on every seed, deterministic resolution, no time-based player harm, visible and spoken status/intent, high contrast, reduced motion, no inaccessible dead ends, touch and switch parity. Visual quality must be approved using real browser screenshots, not inferred from source or tests. No claim of NARBE compliance until integration and user review.
+
+## Expedition challenge (phase 3)
+Three floors, each with a key-bearing guardian. Strike/guard/riposte/retreat with a visible recovery turn. Two upgrade choices over the expedition (blade, armour, vitality), replenished draught after a floor, and a final Warden. Clear victory or defeat report. Gold is currently a score, not a spendable currency. Layout variation is deliberately limited to corridor and encounter placement pending full procedural generation. Next: measure real run completion and switch cost, then add path travel and item synergies; avoid expanding content before core combat works.
