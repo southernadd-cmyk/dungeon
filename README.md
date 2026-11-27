@@ -1,10 +1,10 @@
 # Dungeon Quest
 An atmospheric, single-switch dungeon roguelike. Every action is a tactical choice; enemies never move while you are scanning.
 
-## Play the first vertical slice
+## Play the expedition
 Serve the repository root over HTTP (for example, python -m http.server) and open index.html. The dedicated title menu opens a short, visible and narrated prologue when you begin an expedition. Enter the crypt immediately, repeat the narration, or return to the menu. Continue returns to an in-memory expedition without replaying the intro. Choose Controls on the main menu or in Settings. In one-switch mode, Space selects the automatically highlighted choice on release. In two-switch mode, Space advances the highlight and Enter selects it, both on release; automatic scanning is disabled. Switching to two switches requires confirmation. The chosen mode is saved locally. Mouse and touch also work. Settings include scan speed, speech and reduced motion. No reaction-time challenge.
 
-The Forgotten Crypt prototype has seeded connected rooms, treasure, skeletons with declared intentions, movement, attack, guard, healing and a staircase goal. Inspect surroundings without taking a turn.
+Explore three floors: the Forgotten Crypt, the Bone Vault and the Bellkeeper's Sanctum. Enemies announce their strikes, and guarding reduces the damage and counters before a recovery opening. Treasure supplies gold and draughts. Choose one of three permanent or restorative blessings between floors. Defeat the Bellkeeper and claim the Bell of Dawn to win. Inspect surroundings without taking a turn. Floor layouts and encounters are deterministic for a seed; the room layout remains compact for switch play.
 
 ## Architecture
 - engine.js: deterministic simulation and legal action enumeration; no DOM or timers.
