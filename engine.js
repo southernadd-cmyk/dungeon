@@ -48,8 +48,9 @@ function travelRoute(s,target){
  if(s.outcome||s.phase!=="explore"||nearby(s))return [];
  if(target==="chest"&&s.chest.opened)return [];
  if(target==="exit"&&sealed(s))return [];
- if(target!=="chest"&&target!=="exit")return [];
- const goal=target==="chest"?q=>dist(q,s.chest)<=1:q=>dist(q,s.exit)===0;
+ const boss=target==="boss"?living(s).find(e=>e.type==="boss"):null;
+ if(target!=="chest"&&target!=="exit"&&!boss)return [];
+ const goal=target==="chest"?q=>dist(q,s.chest)<=1:boss?q=>dist(q,boss)===1:q=>dist(q,s.exit)===0;
  const path=pathTo(s,s.player,goal,(x,y)=>!!enemyAt(s,x,y))||[];
  const safe=[];
  for(const q of path){
@@ -87,9 +88,9 @@ function actions(s,includeTravel=true){
  if(p.potions>0&&p.hp<p.max)out.push({id:"heal",label:"Drink healing draught"});
  if(includeTravel){
   const shortcuts=[];
-  for(const target of ["chest","exit"]){
+  for(const target of ["chest",sealed(s)?"boss":"exit"]){
    const route=travelRoute(s,target);
-   if(route.length>=2)shortcuts.push({id:"travel:"+target,label:"Travel toward "+(target==="chest"?"treasure":s.depth===3?"the relic":"stairs")+" ("+route.length+" steps)"});
+   if(route.length>=2)shortcuts.push({id:"travel:"+target,label:"Travel toward "+(target==="chest"?"treasure":target==="boss"?"the Bellkeeper":s.depth===3?"the relic":"stairs")+" ("+route.length+" steps)"});
   }
   out.unshift(...shortcuts);
  }
