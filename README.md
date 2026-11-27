@@ -4,7 +4,7 @@ An atmospheric, single-switch dungeon roguelike. Every action is a tactical choi
 ## Play the first vertical slice
 Serve the repository root over HTTP (for example, python -m http.server) and open index.html. The dedicated title menu opens a short, visible and narrated prologue when you begin an expedition. Enter the crypt immediately, repeat the narration, or return to the menu. Continue returns to an in-memory expedition without replaying the intro. Choose Controls on the main menu or in Settings. In one-switch mode, Space selects the automatically highlighted choice on release. In two-switch mode, Space advances the highlight and Enter selects it, both on release; automatic scanning is disabled. Switching to two switches requires confirmation. The chosen mode is saved locally. Mouse and touch also work. Settings include scan speed, speech and reduced motion. No reaction-time challenge.
 
-The Forgotten Crypt prototype has seeded connected rooms, treasure, skeletons with declared intentions, movement, attack, guard, healing and a staircase goal. Inspect surroundings without taking a turn.
+The Forgotten Crypt is a three-floor expedition. Defeat the key-bearing guardian of each floor to unlock its stairs. Guard a declared strike to prepare a riposte, or dodge away; enemies recover after a strike. Choose a blade, armour or health upgrade between floors, receive a healing draught, and defeat the Bell Warden. The final report tracks floors, kills, treasure, gold and turns. Gold is a score for now. Layouts currently vary by passages and encounter locations, not fully procedural rooms. Inspect surroundings without taking a turn.
 
 ## Architecture
 - engine.js: deterministic simulation and legal action enumeration; no DOM or timers.
