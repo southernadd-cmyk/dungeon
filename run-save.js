@@ -26,7 +26,7 @@ function create(storage){
  function read(){
   try{
    const raw=storage.getItem(KEY);if(raw===null)return {status:"empty",state:null};
-   const data=JSON.parse(raw);
+   let data;try{data=JSON.parse(raw);}catch{return {status:"invalid",state:null};}
    if(data?.version!==VERSION||!valid(data.state))return {status:"invalid",state:null};
    return {status:"saved",state:data.state};
   }catch{return {status:"unavailable",state:null};}
