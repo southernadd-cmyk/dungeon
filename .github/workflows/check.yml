@@ -10,4 +10,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: node --check engine.js && node --check art.js && node --check app.js
-      - run: node --test tests/engine.test.js
+      - run: node --test tests/*.test.js
