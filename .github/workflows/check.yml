@@ -1,0 +1,13 @@
+name: Dungeon checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - run: node --check engine.js && node --check art.js && node --check app.js
+      - run: node --test tests/engine.test.js

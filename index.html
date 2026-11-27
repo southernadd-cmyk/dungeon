@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dungeon Quest — The Forgotten Crypt</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<header><div class="brand"><span class="crest" aria-hidden="true">✦</span><div><div class="eyebrow">A SINGLE-SWITCH ROGUELIKE</div><h1>Dungeon Quest</h1></div></div><div class="chapter"><span>CHAPTER I</span><strong>The Forgotten Crypt</strong></div></header>
+<section class="game" aria-label="Dungeon">
+<div class="world"><canvas id="world" width="960" height="600" aria-label="Illustrated dungeon. Use Look around for a spoken description."></canvas><div class="worldlabel"><span class="eyebrow">THE FORGOTTEN CRYPT</span><strong id="location">Entrance</strong></div><div id="intent" class="intent"></div></div>
+<aside><div class="eyebrow">THE WANDERER</div><h2>Warrior</h2><div class="health"><span>Vitality</span><strong id="hp"></strong></div><div class="meter"><div id="healthbar"></div></div><dl><div><dt>Gold</dt><dd id="gold"></dd></div><div><dt>Healing draughts</dt><dd id="potions"></dd></div><div><dt>Turn</dt><dd id="turn"></dd></div></dl><div class="rule"></div><div class="eyebrow">FIELD JOURNAL</div><p id="journal" role="status" aria-live="polite"></p><div class="rule"></div><p class="hint" id="hint">Space selects the highlighted choice on release.</p></aside>
+</section>
+<section class="command"><div class="commandhead"><h2 id="prompt">Your move</h2><span id="scanstate">Ready</span></div><div id="choices" aria-label="Available actions"></div></section>
+<footer><span>Nothing moves until you choose.</span><span id="seed"></span></footer>
+</main><script src="engine.js"></script><script src="art.js"></script><script src="app.js"></script></body></html>
