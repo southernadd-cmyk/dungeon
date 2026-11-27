@@ -66,7 +66,7 @@ function settings({fresh=true,restoreId=null,announcement=""}={}){
  action("Back",()=>returnScreen==="play"?play():start("settings"),"back")
  ],announcement||(fresh?"Settings":""),{fresh,restoreId});
 }
-M.subscribe(()=>{if(screen==="settings"&&$("prompt").textContent==="Settings")settings({fresh:false});else if(screen==="start")refreshMain();});
+M.subscribe(()=>{if(screen==="settings"&&$("prompt").textContent==="Settings")settings({fresh:false});else if(screen==="start"&&$("prompt").textContent==="Main menu")refreshMain();});
 V.onSettingsChange(()=>{if(screen==="settings"&&$("prompt").textContent==="Settings")settings({fresh:false});});
 function refreshMain(){
  const a=items.find(x=>x.id==="controls");
@@ -77,7 +77,7 @@ document.addEventListener("keyup",input.up);
 document.addEventListener("narbe-input-cancelled",()=>input.cancel());
 window.addEventListener("blur",()=>input.cancel({resetGuard:true}));
 document.addEventListener("visibilitychange",()=>{if(document.hidden)input.cancel({resetGuard:true});});
-window.addEventListener("pagehide",()=>{input.cancel({resetGuard:true});scan.dispose();V.cancel();});
+window.addEventListener("pagehide",e=>{input.cancel({resetGuard:true});V.cancel();if(!e.persisted)scan.dispose();});
 function frame(t){if(!$("game").hidden)window.CryptArt.draw($("world"),s,t,prefs.reduced);requestAnimationFrame(frame);}
 start();requestAnimationFrame(frame);
 })();
