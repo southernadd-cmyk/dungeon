@@ -14,3 +14,6 @@ One crypt biome, warrior, skeleton, treasure and exit. Seeded rooms and corridor
 
 ## Release gates
 A reachable exit on every seed, deterministic resolution, no time-based player harm, visible and spoken status/intent, high contrast, reduced motion, no inaccessible dead ends, touch and switch parity. Visual quality must be approved using real browser screenshots, not inferred from source or tests. No claim of NARBE compliance until integration and user review.
+
+## Binding accessibility requirements
+All new work must follow [Benny’s Hub ACCESSIBILITY.md](https://github.com/NARBEHOUSE/Narbehouse.github.io/blob/main/bennyshub/ACCESSIBILITY.md), especially §§3–7 and the shipping checklist. Every Dungeon Quest menu, turn, blessing and result is a stationary CHOICE context; artwork does not advance the simulation. Reuse the shared managers rather than recreate scan policy. Review upstream changes before release; do not claim Hub compliance without complete integration and real switch-user testing.
