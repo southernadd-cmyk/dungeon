@@ -1,11 +1,41 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dungeon Quest — The Forgotten Crypt</title><link rel="stylesheet" href="style.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dungeon Quest — The Forgotten Crypt</title><link rel="stylesheet" href="style.css?v=title-1"></head>
 <body><main>
 <header><div class="brand"><span class="crest" aria-hidden="true">✦</span><div><div class="eyebrow">AN ACCESSIBLE ROGUELIKE</div><h1>Dungeon Quest</h1></div></div><div class="chapter"><span>CHAPTER I</span><strong>The Forgotten Crypt</strong></div></header>
-<section class="game" aria-label="Dungeon">
+<section id="titleScene" class="title-scene" aria-label="Dungeon Quest introduction">
+<svg class="gate-art" viewBox="0 0 760 470" preserveAspectRatio="xMidYMid slice" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="night" x2="0" y2="1"><stop stop-color="#101620"/><stop offset="1" stop-color="#272a30"/></linearGradient>
+<linearGradient id="stone" x2="1" y2="1"><stop stop-color="#56616a"/><stop offset=".48" stop-color="#303b45"/><stop offset="1" stop-color="#171f28"/></linearGradient>
+<linearGradient id="door" x2="0" y2="1"><stop stop-color="#05090e"/><stop offset="1" stop-color="#25272b"/></linearGradient>
+<radialGradient id="fire"><stop stop-color="#ffba59" stop-opacity=".35"/><stop offset=".4" stop-color="#d87b3a" stop-opacity=".18"/><stop offset="1" stop-color="#d87b3a" stop-opacity="0"/></radialGradient>
+<pattern id="blocks" width="84" height="44" patternUnits="userSpaceOnUse"><rect width="84" height="44" fill="#252d36"/><path d="M0 1H84 M0 22H84 M42 1V22 M0 22V44" stroke="#111820" stroke-width="2"/><path d="M2 4H81 M2 25H81" stroke="#48515a" stroke-opacity=".4"/></pattern>
+<radialGradient id="halo"><stop stop-color="#e1ac6c" stop-opacity=".25"/><stop offset="1" stop-color="#151b24" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="760" height="470" fill="url(#night)"/>
+<path d="M0 0H760V320L650 292 580 320H180L90 295 0 330Z" fill="url(#blocks)"/>
+<path d="M0 470V330L380 272 760 330V470Z" fill="#222b33"/>
+<path d="M0 394L380 280 760 394 M0 445L380 293 760 445 M115 470L380 310 645 470 M270 470L380 310 490 470" fill="none" stroke="#12191f" stroke-width="3"/>
+<path d="M196 318V151Q196 72 380 10Q564 72 564 151V318Z" fill="url(#stone)" stroke="#657079" stroke-width="3"/>
+<path d="M223 317V153Q223 94 380 39Q537 94 537 153V317Z" fill="#1a232d" stroke="#0a1018" stroke-width="4"/>
+<path d="M255 318V156Q255 112 380 65Q505 112 505 156V318Z" fill="url(#door)" stroke="#5a6366" stroke-width="3"/>
+<path d="M380 67V319 M279 135V318 M305 111V318 M330 99V318 M355 83V318 M405 83V318 M430 99V318 M455 111V318 M481 135V318" stroke="#39434a" stroke-width="5"/>
+<path d="M258 205H502 M258 282H502" stroke="#5d5141" stroke-width="7"/>
+<path d="M199 153L255 156 M208 119L269 130 M237 80L294 109 M290 48L333 90 M345 22L366 69 M415 22L394 69 M470 48L427 90 M523 80L466 109 M552 119L491 130 M561 153L505 156" stroke="#121820" stroke-width="3"/>
+<circle cx="380" cy="203" r="94" fill="url(#halo)"/><circle cx="380" cy="203" r="24" fill="#18212a" stroke="#b99b68" stroke-width="3"/><path d="M380 185L394 203 380 221 366 203Z" fill="none" stroke="#dec28a" stroke-width="2"/>
+<path d="M245 320H515L532 331H228Z M225 336H535L552 348H208Z M203 354H557L577 367H183Z" fill="#4c5357" stroke="#161c24" stroke-width="3"/>
+<g fill="url(#stone)" stroke="#141b23" stroke-width="2"><path d="M112 310V81H159V310Z M601 310V81H648V310Z"/><path d="M102 81H169V98H102Z M591 81H658V98H591Z M102 295H169V313H102Z M591 295H658V313H591Z"/></g>
+<g><circle cx="135" cy="179" r="121" fill="url(#fire)"/><path d="M131 198L139 198 137 234 133 234Z" fill="#825f41"/><path d="M124 193Q116 181 136 153Q134 172 145 168Q154 187 143 197Z" fill="#d87b3a"/><path d="M131 194Q125 185 137 172Q145 187 137 195Z" fill="#ffe29a"/></g>
+<g transform="translate(490 0)"><circle cx="135" cy="179" r="121" fill="url(#fire)"/><path d="M131 198L139 198 137 234 133 234Z" fill="#825f41"/><path d="M124 193Q116 181 136 153Q134 172 145 168Q154 187 143 197Z" fill="#d87b3a"/><path d="M131 194Q125 185 137 172Q145 187 137 195Z" fill="#ffe29a"/></g>
+<ellipse cx="380" cy="427" rx="50" ry="12" fill="#111820"/><path d="M360 357L400 357 419 420 340 420Z" fill="#354d60" stroke="#111820" stroke-width="4"/><path d="M367 337L380 327 393 337 393 355 367 355Z" fill="#8c9593" stroke="#1b242c" stroke-width="3"/><path d="M365 361L347 381 352 400 363 392 M398 361L412 381 406 395" fill="none" stroke="#8c9593" stroke-width="8"/><path d="M410 393L437 350 440 353 417 397" fill="#c5cfcc" stroke="#353e45" stroke-width="2"/><path d="M405 390L421 400" stroke="#b99b68" stroke-width="4"/>
+<path d="M365 421L365 434 M395 421L395 434" stroke="#131c25" stroke-width="10"/>
+</svg>
+<div class="title-copy"><p id="titleKicker" class="eyebrow">A TURN-BASED FANTASY ADVENTURE</p><h2 id="titleHeading">Dungeon Quest</h2><div class="title-rule" aria-hidden="true">✦</div><p id="titleText">Beyond the sealed gate, forgotten things awaken.</p></div>
+</section>
+<section id="game" class="game" aria-label="Dungeon" hidden>
 <div class="world"><canvas id="world" width="960" height="600" aria-label="Illustrated dungeon. Use Look around for a spoken description."></canvas><div class="worldlabel"><span class="eyebrow">THE FORGOTTEN CRYPT</span><strong id="location">Entrance</strong></div><div id="intent" class="intent"></div></div>
 <aside><div class="eyebrow">THE WANDERER</div><h2>Warrior</h2><div class="health"><span>Vitality</span><strong id="hp"></strong></div><div class="meter"><div id="healthbar"></div></div><dl><div><dt>Gold</dt><dd id="gold"></dd></div><div><dt>Healing draughts</dt><dd id="potions"></dd></div><div><dt>Turn</dt><dd id="turn"></dd></div></dl><div class="rule"></div><div class="eyebrow">FIELD JOURNAL</div><p id="journal" role="status" aria-live="polite"></p><div class="rule"></div><p class="hint" id="hint">Space selects the highlighted choice on release.</p></aside>
 </section>
-<section class="command"><div class="commandhead"><h2 id="prompt">Your move</h2><div><span id="controlmode" class="eyebrow">ONE SWITCH · AUTO SCAN</span><span id="scanstate">Ready</span></div></div><div id="choices" aria-label="Available actions"></div></section>
+<section class="command"><div class="commandhead"><h2 id="prompt">Your move</h2><div><span id="controlmode" class="eyebrow">ONE SWITCH · AUTO SCAN</span><span id="scanstate">Ready</span></div></div><div id="choices" aria-label="Available actions"></div><p id="controlHint" class="control-hint">Space · select highlighted choice</p></section>
 <footer><span>Nothing moves until you choose.</span><span id="seed"></span></footer>
-</main><script src="engine.js"></script><script src="art.js"></script><script src="app.js?v=two-switch-1"></script></body></html>
+</main><script src="engine.js"></script><script src="art.js"></script><script src="app.js?v=title-1"></script></body></html>
